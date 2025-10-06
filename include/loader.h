@@ -13,8 +13,10 @@ class Symbol{
 public:
 
     enum SymbolType{
-        SYM_TYPE_UKN = 0, 
-        SYM_TYPE_FUNC = 1,  
+        SYM_TYPE_UKNOWN = 0, 
+        SYM_TYPE_FUNC   = 1,
+        SYM_TYPE_OBJECT = 3, 
+        SYM_TYPE_LABEL  = 4 
     }; 
 
     Symbol() : type(SYM_TYPE_UKN, name(), addr(0)) {}
@@ -53,8 +55,16 @@ public:
     enum BinaryType {
         BIN_TYPE_AUTO = 0, 
         BIN_TYPE_ELF =  1,
-        BIN_TYPE_PE =   2
-    }; 
+        BIN_TYPE_COFF = 2,
+        BIN_TYPE_PE = 3, 
+        BIN_TYPE_MACHO
+    };
+
+    enum BinaryArch {
+        ARCH_X86, 
+        ARCH_ARM,
+        ARCH_RISCV 
+    };
 
     Binary() : type(BIN_TYPE_AUTO), arch(ARCH_NONE), bits(0), entry(0) {}
 
