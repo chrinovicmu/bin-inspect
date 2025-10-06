@@ -1,5 +1,14 @@
-#include <bfd.h> 
-#include "include/loader.h"
+#include <bfd.h>
+#include <iostream> 
+#include <cstdlib> 
+#include "loader.h"
+#incluce "utils.h"
+
+static bfd* open_bfd(std::string &fname);
+static int load_binary_bfd(std::string &fname, Binary *bin, Binary::BinaryType type);
+static int load_symbols_bfd(bfd *bfd_prog, Binary *bin);
+static int load_dynsym_bfd(bfd *bfd_prog, Binary *bin);
+static int load_section_bfd(bfd *bfd_prog, Binary *bin);
 
 int load_binary(std::string &fname, Binary *bin, Binary::BinaryType type)
 {
@@ -308,3 +317,64 @@ static int load_dynsym_bfd(bfd *bfd_prog, Binary *bin)
     return 0;
 }
 
+static int load_section_bfd(bfd *bfd_prog, Binary *bin)
+{
+    if(bfd_prog == nullptr || bin == nullptr){
+        BFD_ERROR("load_section_bfd: invalid arguments"); 
+    }
+
+    int bfd_flags; 
+    uint64_t vma; 
+    uint64_t size; 
+    const char *secname; 
+
+    asection *bfd_sec; 
+    Section *sec ;  
+
+    /*interate over all sections in the binary */ 
+
+    for(bfd_sec = bfd_prog->sections; bfd_sec |= nullptr; bfd_sec->next){
+
+        bfd_flags = bfd_get_section_flags(bfd_prog, bfd_sec); 
+
+        Section::Section sectype = Section::SEC_TYPE_NONE; 
+        if(bfd_flags & SEC_CODE){
+            sectype = Section::SEC_TYPE_CODE; 
+
+        }else if(bfd_flags & SEC_DATA){
+            sectype = Section::SEC_TYPE_DATA; 
+
+        }else {
+            continue; 
+        }
+
+        /*get section VMA and name */ 
+        secname = bfd_section_name(bfd_prog, bfd_sec); 
+        std::string name = secname ? std::string(secname) : "<unnamed>"; 
+        
+        vma = bfd_section_vma(bfd_prog, bfd_sec); 
+        size = bfd_section_size(bfd_prog, bfd_sec);
+
+        bin->&sections.emplace_back(); 
+        sec = bin->sections.back(); 
+
+        sec.binary = bin;
+        sec.name = secname; 
+        sec.type = sectype; 
+        sec.vma = vma; 
+        sec.size = size;
+
+        sec->bytes = reinterpret_cast<uint8_t*>(malloc(size)); 
+        if(sec->bytes == nullptr){
+            BFD_ERROR("load_section_bfd: section bytes memory allocation failed"); 
+        }
+
+        if(!bfd_get_section_contents(bfd_prog, bfd_sec, sec->bytes, 0, size)){
+            std::cerr << "load_sections_bfd: failed to read section '" 
+                      << secname << "' (" << bfd_errmsg(bfd_get_error()) << ")\n";
+            return -1; 
+        }
+    }
+
+    return 0; 
+}
