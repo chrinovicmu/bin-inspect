@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbinload.a CMakeFiles/binload.dir/src/loader.cpp.o
+/usr/bin/ranlib libbinload.a

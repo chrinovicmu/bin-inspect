@@ -13,14 +13,14 @@ class Symbol{
 public:
 
     enum SymbolType{
-        SYM_TYPE_UKNOWN = 0, 
+        SYM_TYPE_UNKNOWN = 0, 
         SYM_TYPE_FUNC   = 1,
         SYM_TYPE_OBJECT = 3, 
         SYM_TYPE_LABEL  = 4 
     }; 
 
-    Symbol() : type(SYM_TYPE_UKN, name(), addr(0)) {}
-    SymbolType  type: 
+    Symbol() : type(SYM_TYPE_UNKNOWN), name(), addr(0) {}
+    SymbolType  type;
     std::string name; 
     uint64_t    addr; 
 }; 
@@ -42,7 +42,7 @@ public:
     }
 
     Binary          *binary; 
-    string::string  name;
+    std::string     name;
     SectionType     type; 
     uint64_t        vma;
     uint64_t        size; 
@@ -61,6 +61,7 @@ public:
     };
 
     enum BinaryArch {
+        ARCH_NONE, 
         ARCH_X86, 
         ARCH_ARM,
         ARCH_RISCV 
@@ -80,7 +81,8 @@ public:
     std::string     type_str; 
     BinaryArch      arch; 
     std::string     arch_str; 
-    uint64_t        entry; 
+    uint64_t        entry;
+    uint64_t        bits; 
     std::vector<Section> sections; 
     std::vector<Symbol> symbols; 
 }; 

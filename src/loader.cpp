@@ -1,8 +1,9 @@
 #include <bfd.h>
 #include <iostream> 
-#include <cstdlib> 
+#include <cstdlib>
+#include <vector> 
 #include "loader.h"
-#incluce "utils.h"
+#include "utils.h"
 
 static bfd* open_bfd(std::string &fname);
 static int load_binary_bfd(std::string &fname, Binary *bin, Binary::BinaryType type);
@@ -42,24 +43,24 @@ static bfd *open_bfd(std::string &fname)
     /*NULL: auto detect target format based on file content */ 
     bfd_prog = bfd_openr(fname.c_str(), NULL); 
     if(!bfd_prog){
-        BFD__fail("failed to open binary %s", fname); 
+        BFD_FAIL("failed to open binary %s", fname); 
     }
 
     if(!bfd_check_format(bfd_prog, bfd_object)){
-        BFD__fail("file '%s' is not executable", fname); 
+        BFD_FAIL("file '%s' is not executable", fname); 
     }
 
     bfd_set_error(bfd_error_no_error); 
 
     if(bfd_get_flavour(bfd_prog) == bfd_target_unknown_flavour){
-        BFD__fail("unrecognized format for binary '%s'", fname); 
+        BFD_FAIL("unrecognized format for binary '%s'", fname); 
     }
 
     return bfd_prog; 
 }
 
 
-static int load_binary(std::string &fname, Binary *bin, Binary::BinaryType type) 
+static int load_binary_bfd(std::string &fname, Binary *bin, Binary::BinaryType type) 
 {
     if (fname.empty()) {
         std::cerr << "error: filename is empty\n";
@@ -108,7 +109,7 @@ static int load_binary(std::string &fname, Binary *bin, Binary::BinaryType type)
             break;
 
         /* PE - windows executables */
-        case bfd_target_pe_flavour:
+        case bfd_target_pef_flavour:
             bin->type = Binary::BIN_TYPE_PE;
             break;
 
@@ -148,8 +149,8 @@ static int load_binary(std::string &fname, Binary *bin, Binary::BinaryType type)
             break;
 
         /* ARM 32-bit and 64-bit */
-        case bfd_mach_arm_4t:
-        case bfd_mach_arm_5t:
+        case bfd_mach_arm_4T:
+        case bfd_mach_arm_5T:
         case bfd_mach_arm_6:
         case bfd_mach_arm_7:
         case bfd_mach_arm_8:
@@ -333,36 +334,38 @@ static int load_section_bfd(bfd *bfd_prog, Binary *bin)
 
     /*interate over all sections in the binary */ 
 
-    for(bfd_sec = bfd_prog->sections; bfd_sec |= nullptr; bfd_sec->next){
+    for(bfd_sec = bfd_prog->sections; bfd_sec != nullptr; bfd_sec->next){
 
-        bfd_flags = bfd_get_section_flags(bfd_prog, bfd_sec); 
+        if(!bfd_set_section_flags(bfd_sec, bfd_flags)){
+            BFD_ERROR("load_section_bfd: failed to get section flags");
+        }
 
-        Section::Section sectype = Section::SEC_TYPE_NONE; 
+        Section::SectionType type = Section::SEC_TYPE_NONE; 
         if(bfd_flags & SEC_CODE){
-            sectype = Section::SEC_TYPE_CODE; 
+            type = Section::SEC_TYPE_CODE; 
 
         }else if(bfd_flags & SEC_DATA){
-            sectype = Section::SEC_TYPE_DATA; 
+            type = Section::SEC_TYPE_DATA; 
 
         }else {
             continue; 
         }
 
         /*get section VMA and name */ 
-        secname = bfd_section_name(bfd_prog, bfd_sec); 
+        secname = bfd_section_name(bfd_sec); 
         std::string name = secname ? std::string(secname) : "<unnamed>"; 
         
-        vma = bfd_section_vma(bfd_prog, bfd_sec); 
-        size = bfd_section_size(bfd_prog, bfd_sec);
+        vma = bfd_section_vma(bfd_sec); 
+        size = bfd_section_size(bfd_sec);
 
-        bin->&sections.emplace_back(); 
-        sec = bin->sections.back(); 
+        bin->sections.emplace_back(); 
+        sec = &bin->sections.back(); 
 
-        sec.binary = bin;
-        sec.name = secname; 
-        sec.type = sectype; 
-        sec.vma = vma; 
-        sec.size = size;
+        sec->binary = bin;
+        sec->name = secname; 
+        sec->type = type; 
+        sec->vma = vma; 
+        sec->size = size;
 
         sec->bytes = reinterpret_cast<uint8_t*>(malloc(size)); 
         if(sec->bytes == nullptr){

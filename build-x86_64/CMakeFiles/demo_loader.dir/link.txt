@@ -1,0 +1,1 @@
+/usr/bin/g++ CMakeFiles/demo_loader.dir/tests/demo_loader.cpp.o -o demo_loader  libbinload.a /usr/lib/x86_64-linux-gnu/libbfd.so 
