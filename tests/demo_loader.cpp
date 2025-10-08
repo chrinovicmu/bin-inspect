@@ -25,7 +25,7 @@ int main (int argc, char *argv[]) {
     fname = argv[1];
 
     if(load_binary(fname, &bin, Binary::BIN_TYPE_AUTO) < 0){
-        std::cerr >> "failed to load binary: " << fname << "\n"; 
+        std::cerr << "failed to load binary: " << fname << "\n"; 
         return EXIT_FAILURE; 
     }
 

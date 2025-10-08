@@ -136,46 +136,60 @@ static int load_binary_bfd(std::string &fname, Binary *bin, Binary::BinaryType t
         return -1;
     }
 
-    switch (bfd_info->mach) {
 
-        /* x86 32-bit and 64-bit */
+    switch (bfd_info->mach)
+    {
+        /* x86 / x86_64 */
         case bfd_mach_i386_i386:
-            bin->arch = Binary::ARCH_X86;
-            bin->bits = 32;
-            break;
         case bfd_mach_x86_64:
             bin->arch = Binary::ARCH_X86;
-            bin->bits = 64;
+            bin->bits = (bfd_info->mach == bfd_mach_x86_64) ? 64 : 32;
             break;
 
-        /* ARM 32-bit and 64-bit */
+        /* ARM 32-bit */
+    #if defined(bfd_mach_arm_4T)
         case bfd_mach_arm_4T:
+    #endif
+/*
+    #if defined(bfd_mach_arm_5T)
         case bfd_mach_arm_5T:
+    #endif */ 
+    #if defined(bfd_mach_arm_6)
         case bfd_mach_arm_6:
+    #endif
+    #if defined(bfd_mach_arm_7)
         case bfd_mach_arm_7:
-        case bfd_mach_arm_8:
-        case bfd_mach_arm_unknown:
+    #endif
             bin->arch = Binary::ARCH_ARM;
             bin->bits = 32;
             break;
+
+        /* ARM 64-bit (AArch64) */
+    #if defined(bfd_mach_aarch64)
         case bfd_mach_aarch64:
             bin->arch = Binary::ARCH_ARM;
             bin->bits = 64;
             break;
+    #endif
 
-        /* RISC-V 32-bit and 64-bit */
+        /* RISC-V */
+    #if defined(bfd_mach_riscv32)
         case bfd_mach_riscv32:
             bin->arch = Binary::ARCH_RISCV;
             bin->bits = 32;
             break;
+    #endif
+    #if defined(bfd_mach_riscv64)
         case bfd_mach_riscv64:
             bin->arch = Binary::ARCH_RISCV;
             bin->bits = 64;
             break;
-
+    #endif
+    
         default:
-            std::cerr << "unsupported architecture (" << bfd_info->printable_name << ")\n";
-            bfd_close(bfd_prog);
+            std::cerr << "Unsupported architecture: "
+                    << (bfd_info->printable_name ? bfd_info->printable_name : "unknown")
+                    << "\n";
             return -1;
     }
 
