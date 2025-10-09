@@ -4,6 +4,7 @@
 #include <stdint.h> 
 #include <string>
 #include <vector> 
+#include <iomanip> 
 
 class Binary; 
 class Section; 
@@ -74,6 +75,53 @@ public:
             if(s.name == ".text")
                 return &s; 
         return NULL; 
+    }
+
+    void print_bin_info() const {
+        std::cout << "Filename: " << filename << "\n"; 
+        std::cout << "Type: " << type_str << "\n";
+        std::cout << "Arch: " << arch_str << "(" << bits << "-bits)" << "\n";
+        std::cout << "Entry: " << std::hex << entry << std::dec << "\n"; 
+        std::cout << "Sections: " << sections.size() << "\n"; 
+        std::cout << "Symbols: " << symbols.size() << "\n\n"; 
+    }
+
+    void print_bin_sections() const {
+
+        std::cout << "\nSections:\n";
+        std::cout <<  std::left 
+            << std::setw(20) << "Name" 
+            << std::setw(12) << "VMA" 
+            << std::setw(12) << "Size" 
+            << std::setw(12) << "Type" << "\n"; 
+        std::cout << std::string(56, '-') << "\n"; 
+
+        for(const auto& s : sections){
+            std::cout << std::left
+                << std::setw(20) << s.name
+                << std::setw(12) << std::hex << s.vma
+                << std::setw(12) << s.size 
+                << std::setw(12) << (s.type == Section::SEC_TYPE_CODE ? "CODE" :
+                                     s.type == Section::SEC_TYPE_DATA ? "DATA" : "NONE")
+                << std::dec << "\n"; 
+        }
+
+    }
+
+     void print_bin_symbols() const {
+
+        std::cout << "\nSymbols:\n";
+        std::cout << std::left
+                  << std::setw(30) << "Name"
+                  << std::setw(12) << "Addr" << "\n";
+        std::cout << std::string(54, '-') << "\n";
+
+        for (const auto& sym : symbols) {
+            std::cout << std::left
+                      << std::setw(30) << sym.name
+                      << std::setw(12) << std::hex << sym.addr
+                      << std::dec << "\n";
+        }
     }
 
     std::string     filename; 

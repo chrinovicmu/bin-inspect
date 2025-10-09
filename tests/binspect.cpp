@@ -7,8 +7,6 @@
 
 int main (int argc, char *argv[]) {
 
-    return 0;
-
     size_t x; 
     Binary bin; 
     Section *sec; 
@@ -29,8 +27,9 @@ int main (int argc, char *argv[]) {
         return EXIT_FAILURE; 
     }
 
-    std::cout << "Loaded binary: " << fname << "\n"; 
-
+    bin.print_bin_info(); 
+    bin.print_bin_sections();
+    bin.print_bin_symbols();
     return 0; 
 
 
