@@ -9,7 +9,7 @@ static bfd* open_bfd(std::string &fname);
 static int load_binary_bfd(std::string &fname, Binary *bin, Binary::BinaryType type);
 static int load_symbols_bfd(bfd *bfd_prog, Binary *bin);
 static int load_dynsym_bfd(bfd *bfd_prog, Binary *bin);
-static int load_section_bfd(bfd *bfd_prog, Binary *bin);
+static int load_sections_bfd(bfd *bfd_prog, Binary *bin);
 
 int load_binary(std::string &fname, Binary *bin, Binary::BinaryType type)
 {
@@ -207,6 +207,14 @@ static int load_binary_bfd(std::string &fname, Binary *bin, Binary::BinaryType t
         return -1;
     }
 
+
+    if(load_sections_bfd(bfd_prog, bin) < 0){
+        std::cerr << "failed to load sections";
+        bfd_close(bfd_prog); 
+        return -1; 
+    }
+
+  
     bfd_close(bfd_prog);
     return 0;
 }
@@ -332,7 +340,7 @@ static int load_dynsym_bfd(bfd *bfd_prog, Binary *bin)
     return 0;
 }
 
-static int load_section_bfd(bfd *bfd_prog, Binary *bin)
+static int load_sections_bfd(bfd *bfd_prog, Binary *bin)
 {
     if(bfd_prog == nullptr || bin == nullptr){
         BFD_ERROR("load_section_bfd: invalid arguments"); 
@@ -348,7 +356,7 @@ static int load_section_bfd(bfd *bfd_prog, Binary *bin)
 
     /*interate over all sections in the binary */ 
 
-    for(bfd_sec = bfd_prog->sections; bfd_sec != nullptr; bfd_sec->next){
+    for(bfd_sec = bfd_prog->sections; bfd_sec != nullptr; bfd_sec = bfd_sec->next){
 
         if(!bfd_set_section_flags(bfd_sec, bfd_flags)){
             BFD_ERROR("load_section_bfd: failed to get section flags");

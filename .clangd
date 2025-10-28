@@ -1,0 +1,79 @@
+# File: .clangd
+# Place this file in the root directory of your C++ project
+# This configures clangd's behavior for better code intelligence
+
+# Compiler flags configuration
+CompileFlags:
+  # Compiler flags to add to all files
+  # These flags tell clangd how to interpret your code
+  Add:
+    - -std=c++17                    # Use C++17 standard (change to c++20, c++14, etc. as needed)
+    - -Wall                         # Enable all common warnings
+    - -Wextra                       # Enable extra warnings
+    - -Wpedantic                    # Strict ISO C++ compliance warnings
+    - -I/usr/include                # Include system headers path
+    - -I/usr/local/include          # Include local headers path
+    # Add your project-specific include directories:
+    # - -I${workspaceFolder}/include
+    # - -I${workspaceFolder}/src
+    
+  # Compiler flags to remove (useful for removing problematic flags)
+  Remove:
+    - -m*                           # Remove machine-specific flags that might cause issues
+    - -f*color-diagnostics          # Remove color diagnostic flags (not needed in LSP)
+
+# Diagnostics configuration
+Diagnostics:
+  # Control which warnings/errors are shown
+  ClangTidy:
+    Add: 
+      - modernize-*                 # Suggest modern C++ features
+      - readability-*               # Improve code readability
+      - performance-*               # Performance improvements
+      - bugprone-*                  # Catch common bugs
+    Remove:
+      - modernize-use-trailing-return-type  # Don't enforce trailing return types
+      - readability-magic-numbers             # Allow magic numbers
+  
+  # Suppress specific warnings (uncomment if needed)
+  # Suppress:
+  #   - unused-parameter
+  #   - unused-variable
+  
+  # Show unused includes
+  UnusedIncludes: Strict
+  
+  # Show missing includes
+  MissingIncludes: Strict
+
+# Index configuration - controls how clangd builds its code database
+Index:
+  # Build index in background for better performance
+  Background: Build
+  
+  # Set to true to index standard library (increases memory usage)
+  StandardLibrary: true
+
+# InlayHints - show type information and parameter names inline
+InlayHints:
+  # Show inferred types for 'auto' variables
+  DeducedTypes: true
+  
+  # Show parameter names in function calls
+  ParameterNames: true
+  
+  # Show designated initializers
+  Designators: true
+
+# Hover information configuration
+Hover:
+  # Show the value of constexpr expressions
+  ShowAKA: true
+
+# Completion configuration
+Completion:
+  # Show all overloads in completion
+  AllScopes: true
+
+# Semantic highlighting
+SemanticHighlighting: true
